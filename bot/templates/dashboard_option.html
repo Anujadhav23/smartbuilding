@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ title }} - Dashboard</title>
+    <style>
+    :root{--bg-top:#f6f9ff;--bg-bot:#eef7fb;--card-top:#ffffff;--card-bot:#fbfdff;--muted:#6c757d;--accent:#007bff}
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body { font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial; background: linear-gradient(180deg,var(--bg-top),var(--bg-bot)); margin:0; color:#0f1720; -webkit-font-smoothing:antialiased; padding:40px 20px; }
+
+    .page-wrap{min-height:100vh; display:flex; align-items:center; justify-content:center}
+    .container { width:100%; max-width:920px; margin:0 auto; background: linear-gradient(180deg,var(--card-top),var(--card-bot)); padding:28px; border-radius:14px; box-shadow:0 18px 40px rgba(19,24,32,0.06); border:1px solid rgba(14,30,37,0.06); }
+
+    .page-header{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:8px}
+    .brand{display:flex; align-items:center; gap:10px}
+    .brand .logo{width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg,#6d28d9,#0ea5e9); display:inline-flex; align-items:center; justify-content:center; color:#fff; font-weight:700}
+    .title{font-size:18px; font-weight:700}
+    .back { color:var(--accent); text-decoration:none; font-size:14px }
+
+    h2{margin:6px 0 10px 0}
+    p{color:var(--muted)}
+
+    .grid{display:grid; grid-template-columns: repeat(3, 1fr); gap:14px}
+    .card{padding:16px; background:#fff; border:1px solid #eef2f6; border-radius:10px; text-align:center}
+    .card h4{margin:0 0 8px 0}
+    .btn{display:inline-block; padding:8px 12px; background:linear-gradient(90deg,#2563eb,#0ea5e9); color:#fff; border-radius:8px; text-decoration:none; border:none}
+    .btn.secondary{background:#28a745}
+
+    table{width:100%; border-collapse:collapse}
+    th,td{padding:10px; border-bottom:1px solid #f0f4f8; text-align:left}
+    thead th{background:#fbfdff; border-bottom:2px solid #e6eef8}
+
+    @media (max-width:900px){ .grid{grid-template-columns:repeat(2,1fr)} }
+    @media (max-width:600px){ .grid{grid-template-columns:1fr} .container{padding:18px} }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'dashboard' %}" class="back">← Back to dashboard</a>
+        <h2>{{ title }}</h2>
+        <p>{{ content }}</p>
+
+    {% if title == 'Facilities' and facilities %}
+            <div style="margin-top:16px;">
+                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px;">
+                    {% for f in facilities %}
+                        <div style="padding:16px; background:#fff; border:1px solid #e6e6e6; border-radius:8px; text-align:center;">
+                            <h4 style="margin:0 0 8px 0;">{{ f.name }}</h4>
+                            
+                            <a href="{% url 'facility_detail' f.slug %}" style="display:inline-block; padding:6px 10px; background:#007bff; color:#fff; border-radius:6px; text-decoration:none;">OPEN</a>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div style="margin-top:18px;">
+                    <p>If you need more information about any of the facilities above or want to report an issue, click "OPEN" on the relevant block or contact management via the Contact page.</p>
+                    <a href="{% url 'dashboard_page' 'contact' %}" class="btn" style="background:#28a745; text-decoration:none;">Go to Contact page</a>
+                </div>
+            </div>
+    {% elif title == 'Contact' and contacts %}
+            <div style="margin-top:16px;">
+                <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:12px;">
+                    {% for c in contacts %}
+                        <div style="padding:12px; background:#fff; border:1px solid #e6e6e6; border-radius:8px;">
+                            <h4 style="margin:0 0 8px 0;">{{ c.name }}</h4>
+                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                {% for num in c.numbers %}
+                                    <a href="tel:{{ num }}" style="padding:8px 10px; background:#007bff; color:#fff; border-radius:6px; text-decoration:none;">Call {{ num }}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div style="margin-top:18px;">
+                    <p>If a contact number doesn't work, please call the general manager or use the emergency numbers above.</p>
+                </div>
+            </div>
+    {% elif title == 'Events' and events %}
+            <div style="margin-top:16px;">
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Month (Approx.)</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Festival</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Ideas for Celebration</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ev in events %}
+                            <tr>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0; vertical-align:top;">{{ ev.month }}</td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0; vertical-align:top;"><strong>{{ ev.festival }}</strong></td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0; vertical-align:top; color:#6c757d;">{{ ev.ideas }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+    {% elif title == 'Info' and info %}
+            <div style="margin-top:16px;">
+                <div style="background:#fff; border:1px solid #e6e6e6; padding:16px; border-radius:8px;">
+                    <h3 style="margin-top:0;">Society Information</h3>
+                    <table style="width:100%; border-collapse:collapse;">
+                        <tbody>
+                            <tr><td style="padding:8px; width:220px; font-weight:600;">Society Name</td><td style="padding:8px;">{{ info.society_name }}</td></tr>
+                            <tr><td style="padding:8px; font-weight:600;">Address</td><td style="padding:8px;">{{ info.address }}</td></tr>
+                            <tr><td style="padding:8px; font-weight:600;">Registration No.</td><td style="padding:8px;">{{ info.registration_no }}</td></tr>
+                            <tr><td style="padding:8px; font-weight:600;">Total Flats</td><td style="padding:8px;">{{ info.total_flats }}</td></tr>
+                            <tr><td style="padding:8px; font-weight:600;">Buildings</td><td style="padding:8px;">{{ info.buildings }}</td></tr>
+                            <tr><td style="padding:8px; font-weight:600;">Secretary</td><td style="padding:8px;">{{ info.secretary }}</td></tr>
+                            <tr><td style="padding:8px; font-weight:600;">Treasurer</td><td style="padding:8px;">{{ info.treasurer }}</td></tr>
+                            <tr><td style="padding:8px; font-weight:600;">Chairman</td><td style="padding:8px;">{{ info.chairman }}</td></tr>
+                            <tr><td style="padding:8px; font-weight:600;">Maintenance Due Date</td><td style="padding:8px;">{{ info.maintenance_due }}</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% elif title == 'Parking' and parking_locations %}
+            <div style="margin-top:16px;">
+                <h3>Parking Rules &amp; Policy</h3>
+                <ul>
+                    <li>Each flat is allotted one car and one bike parking slot.</li>
+                    <li>Visitors must park only in designated visitor slots (V1–V10).</li>
+                    <li>Overnight visitor parking requires security approval.</li>
+                    <li>No commercial or outsider parking allowed.</li>
+                    <li>EV charging is allowed only at marked EV slots.</li>
+                    <li>Parking stickers must be displayed on all vehicles.</li>
+                    <li>Any illegal or double parking will attract a fine of ₹500.</li>
+                </ul>
+
+                <h3 style="margin-top:18px;">Parking Locations</h3>
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Location</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Capacity</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Type</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">CCTV</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Lighting</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in parking_locations %}
+                            <tr>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ p.location }}</td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ p.capacity }}</td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ p.type }}</td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ p.cctv }}</td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ p.lighting }}</td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ p.remarks }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <h3 style="margin-top:18px;">EV Charger Points</h3>
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Point ID</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Slot No.</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Charger Type</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Status</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Contact Person</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in ev_chargers %}
+                            <tr>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ e.point_id }}</td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ e.slot_no }}</td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ e.charger_type }}</td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ e.status }}</td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ e.contact }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% elif title == 'Apartment' and apartments %}
+            <div style="margin-top:16px;">
+                <h3>Apartment Directory</h3>
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Flat No.</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Name</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Role</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Contact</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Email</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Members</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Vehicle No.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for a in apartments %}
+                            <tr>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ a.flat_no }}</td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ a.name }}</td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ a.role }}</td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ a.contact }}</td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;"><a href="mailto:{{ a.email }}">{{ a.email }}</a></td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ a.members }}</td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ a.vehicle }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% elif title == 'Maintenance' and maintenance %}
+            <div style="margin-top:16px;">
+                <h3>Maintenance Details</h3>
+                <div style="background:#fff; border:1px solid #e6e6e6; padding:16px; border-radius:8px;">
+                    <p><strong>Standard maintenance amount:</strong> {{ maintenance.standard_amount }}</p>
+                    <p><strong>Due Date:</strong> {{ maintenance.due_date }}</p>
+                    <p><strong>Late Fee Policy:</strong> {{ maintenance.late_fee }}</p>
+                    <p><strong>Accepted Modes:</strong> {{ maintenance.accepted_modes|join:", " }}</p>
+                    <p><strong>Contact for Queries:</strong> {{ maintenance.contact }}</p>
+                </div>
+            </div>
+        {% elif title == 'Gym' and gym %}
+            <div style="margin-top:16px;">
+                <h3>Gym Information</h3>
+                <div style="background:#fff; border:1px solid #e6e6e6; padding:16px; border-radius:8px;">
+                    <p><strong>Gym Name:</strong> {{ gym.gym_name }}</p>
+                    <p><strong>Location:</strong> {{ gym.location }}</p>
+                    <p><strong>Timings:</strong> {{ gym.timings }}</p>
+                    <p><strong>Trainer:</strong> {{ gym.trainer_name }} — {{ gym.trainer_contact }}</p>
+                    <p><strong>Trainer Availability:</strong> {{ gym.trainer_availability }}</p>
+                    <p><strong>Members Enrolled:</strong> {{ gym.members_enrolled }}</p>
+                    <p><strong>Membership Fee:</strong> {{ gym.membership_fee }}</p>
+                    <p><strong>Equipment Available:</strong> {{ gym.equipment }}</p>
+                    <p><strong>Facilities:</strong> {{ gym.facilities }}</p>
+                    <p><strong>Maintenance Day:</strong> {{ gym.maintenance_day }}</p>
+                    <p><strong>Emergency Contact:</strong> {{ gym.emergency_contact }}</p>
+                    <h4 style="margin-top:12px;">Rules &amp; Regulations</h4>
+                    <ol>
+                        {% for r in gym.rules %}
+                            <li>{{ r }}</li>
+                        {% endfor %}
+                    </ol>
+                </div>
+
+                <h3 style="margin-top:18px;">Gym Members</h3>
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Member ID</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Name</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Flat No.</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Membership Type</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Start Date</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">End Date</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Payment Mode</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Fee (₹)</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for m in gym_members %}
+                            <tr>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ m.id }}</td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ m.name }}</td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ m.flat }}</td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ m.type }}</td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ m.start }}</td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ m.end }}</td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ m.mode }}</td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ m.fee }}</td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ m.status }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% elif title == 'Flat Sales' and flats_for_sale %}
+            <div style="margin-top:16px;">
+                <h3>Flats for Sale / Resale</h3>
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Flat No.</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Price</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Area</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Contact</th>
+                            <th style="text-align:left; padding:8px; border-bottom:2px solid #e6e6e6;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for f in flats_for_sale %}
+                            <tr>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ f.flat_no }}</td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ f.price }}</td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ f.area }}</td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;"><a href="tel:{{ f.contact }}">{{ f.contact }}</a></td>
+                                <td style="padding:8px; border-bottom:1px solid #f0f0f0;">{{ f.status }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <!-- Placeholder area: add specific UI for each page here -->
+        {% endif %}
+    </div>
+</body>
+</html>

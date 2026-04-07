@@ -1,0 +1,106 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Sign up - SmartBuilding</title>
+	<style>
+	:root{ --bg1:#6a4cff; --bg2:#5b8cff }
+	*, *::before, *::after { box-sizing: border-box; }
+	html,body{height:100%}
+	body{ margin:0; font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial; background: linear-gradient(135deg,var(--bg1),var(--bg2)); display:flex; align-items:center; justify-content:center; color:#fff; overflow-x:hidden }
+
+	.wrap{ width:100%; max-width:520px; padding:36px 20px 48px; box-sizing:border-box }
+	.card{ position:relative; padding:40px 28px 28px; border-radius:12px; background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.04)); box-shadow:0 40px 80px rgba(3,10,40,0.36); border:1px solid rgba(255,255,255,0.08); max-width:100%; overflow:visible }
+
+	.avatar-wrap{ position:absolute; left:50%; transform:translateX(-50%); top:-44px }
+	.avatar{ width:88px; height:88px; border-radius:50%; background:rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; border:3px solid rgba(255,255,255,0.12); box-shadow:0 10px 30px rgba(3,10,40,0.4) }
+
+	h2{ margin:10px 0 14px 0; text-align:center; color:#fff }
+	.lead{ text-align:center; color:rgba(255,255,255,0.85); margin-bottom:18px }
+
+	.field{ margin-bottom:12px; position:relative }
+	.input-icon{ position:absolute; left:12px; top:50%; transform:translateY(-50%); color:rgba(255,255,255,0.9) }
+	input, select{ width:100%; padding:12px 12px 12px 44px; border-radius:6px; border:none; outline:none; background:rgba(255,255,255,0.12); color:#fff; box-sizing:border-box }
+	input::placeholder{ color:rgba(255,255,255,0.8) }
+
+	.btn{ width:100%; margin-top:12px; padding:12px 14px; border-radius:6px; border:none; cursor:pointer; font-weight:700; color:#fff; background:linear-gradient(90deg,#2836ff,#7b3fff); box-shadow:0 12px 30px rgba(35,40,120,0.36) }
+
+	.links{ text-align:center; margin-top:12px }
+	.links a{ color:rgba(255,255,255,0.95); text-decoration:underline }
+
+	.error{ color:#ffd6d6; margin-top:6px }
+	.message{ padding:10px; margin-bottom:12px; border-radius:6px; background:rgba(0,0,0,0.15); color:#fff }
+
+	@media (max-width:520px){ .card{ padding:52px 18px 20px } .avatar{ width:76px; height:76px } }
+	</style>
+</head>
+<body>
+	<div class="wrap">
+		<div class="card">
+			<div class="avatar-wrap">
+				<div class="avatar">
+					<!-- small logo/person -->
+					<svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 12a4 4 0 100-8 4 4 0 000 8z" fill="rgba(255,255,255,0.95)"/><path d="M3 21a9 9 0 0118 0" stroke="rgba(255,255,255,0.9)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+				</div>
+			</div>
+
+			<h2>Create an account</h2>
+			<div class="lead">Join SMARTPLACE — manage your building, services and profile.</div>
+
+			{% if messages %}
+				{% for message in messages %}
+					<div class="message {{ message.tags }}">{{ message }}</div>
+				{% endfor %}
+			{% endif %}
+
+			<form method="post" novalidate>
+				{% csrf_token %}
+
+				<div class="field">
+					<span class="input-icon">🏷️</span>
+					{{ form.role }}
+					{% if form.role.errors %}<div class="error">{{ form.role.errors|striptags }}</div>{% endif %}
+				</div>
+
+				<div class="field">
+					<span class="input-icon">👤</span>
+					{{ form.full_name }}
+					{% if form.full_name.errors %}<div class="error">{{ form.full_name.errors|striptags }}</div>{% endif %}
+				</div>
+
+				<div class="field">
+					<span class="input-icon">📞</span>
+					{{ form.contact_number }}
+					{% if form.contact_number.errors %}<div class="error">{{ form.contact_number.errors|striptags }}</div>{% endif %}
+				</div>
+
+				<div class="field">
+					<span class="input-icon">🆔</span>
+					{{ form.aadhar_number }}
+					{% if form.aadhar_number.errors %}<div class="error">{{ form.aadhar_number.errors|striptags }}</div>{% endif %}
+				</div>
+
+				<div class="field">
+					<span class="input-icon">🎂</span>
+					{{ form.dob }}
+					{% if form.dob.errors %}<div class="error">{{ form.dob.errors|striptags }}</div>{% endif %}
+				</div>
+
+				<div class="field">
+					<span class="input-icon">🔒</span>
+					{{ form.password }}
+					{% if form.password.errors %}<div class="error">{{ form.password.errors|striptags }}</div>{% endif %}
+				</div>
+
+				<button type="submit" class="btn">Sign up</button>
+			</form>
+
+			<div class="links">
+				<a href="{% url 'login' %}">Already have an account? Log in</a>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Security Gate - Visitors Today</title>
+    <style>
+    :root{--bg1:#667eea;--bg2:#764ba2;--card:rgba(255,255,255,0.95);--accent:#667eea;--muted:#6b7280;--success:#10b981}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;padding:30px 16px}
+    .container{max-width:960px;margin:0 auto;background:var(--card);backdrop-filter:blur(12px);border-radius:16px;padding:28px;box-shadow:0 8px 32px rgba(0,0,0,0.18);border:1px solid rgba(255,255,255,0.3)}
+    .back{color:var(--accent);text-decoration:none;font-size:14px;font-weight:500}.back:hover{text-decoration:underline}
+    h2{margin:10px 0 6px;font-size:22px;color:#1e293b}
+    .date-tag{color:var(--muted);font-size:14px;margin-bottom:14px}
+    .msg{padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:14px}
+    .msg.success{background:#d1fae5;color:#065f46}
+    .visitor-card{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding:16px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:10px;transition:box-shadow .2s}
+    .visitor-card:hover{box-shadow:0 6px 18px rgba(0,0,0,0.06)}
+    .visitor-info{flex:1;min-width:200px}
+    .visitor-info h4{margin:0 0 4px;font-size:16px;color:#1e293b}
+    .visitor-info p{margin:2px 0;font-size:13px;color:var(--muted)}
+    .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;color:#fff}
+    .badge.approved{background:var(--accent)}.badge.arrived{background:var(--success)}
+    .btn-arrive{padding:8px 16px;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;color:#fff;background:linear-gradient(135deg,#10b981,#059669);box-shadow:0 4px 12px rgba(16,185,129,0.3);transition:transform .15s}
+    .btn-arrive:hover{transform:translateY(-2px)}
+    .arrived-tag{color:var(--success);font-weight:700;font-size:13px}
+    .empty{text-align:center;padding:40px;color:var(--muted);font-size:15px}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'dashboard' %}" class="back">← Back to Dashboard</a>
+        <h2>🛡️ Security Gate — Today's Visitors</h2>
+        <p class="date-tag">{{ today|date:"l, d F Y" }}</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="msg {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        {% if visitors %}
+            {% for v in visitors %}
+            <div class="visitor-card">
+                <div class="visitor-info">
+                    <h4>{{ v.visitor_name }}</h4>
+                    <p>📞 {{ v.visitor_contact }} &nbsp;|&nbsp; 🏠 Flat {{ v.flat_number|default:"N/A" }}</p>
+                    <p>📌 {{ v.purpose }}</p>
+                    <p>🕐 Expected at {{ v.expected_time|time:"h:i A" }}
+                        {% if v.vehicle_number %} &nbsp;|&nbsp; 🚗 {{ v.vehicle_number }}{% endif %}
+                    </p>
+                    <p style="margin-top:4px">Approved by: <strong>{{ v.flat_owner.full_name }}</strong></p>
+                </div>
+                <div style="text-align:center">
+                    {% if v.status == "approved" %}
+                        <span class="badge approved" style="margin-bottom:6px;display:block">Approved</span>
+                        <form method="post" action="{% url 'mark_arrived' v.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-arrive">✅ Mark Arrived</button>
+                        </form>
+                    {% else %}
+                        <span class="badge arrived">Arrived</span>
+                        <p class="arrived-tag">at {{ v.arrived_at|time:"h:i A" }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty">🚫 No pre-approved visitors for today.</div>
+        {% endif %}
+    </div>
+</body>
+</html>

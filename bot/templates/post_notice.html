@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Post Notice - Secretary</title>
+    <style>
+    :root{--bg1:#667eea;--bg2:#764ba2;--card:rgba(255,255,255,0.95);--accent:#667eea;--muted:#6b7280}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;padding:30px 16px}
+    .container{max-width:680px;margin:0 auto;background:var(--card);backdrop-filter:blur(12px);border-radius:16px;padding:28px;box-shadow:0 8px 32px rgba(0,0,0,0.18);border:1px solid rgba(255,255,255,0.3)}
+    .back{color:var(--accent);text-decoration:none;font-size:14px;font-weight:500}.back:hover{text-decoration:underline}
+    h2{margin:10px 0 18px;font-size:22px;color:#1e293b}
+    .msg{padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:14px}
+    .msg.error{background:#fee2e2;color:#991b1b}
+    label{display:block;font-weight:600;margin-bottom:5px;color:#334155;font-size:14px}
+    input[type=text],select,textarea{width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;margin-bottom:14px}
+    textarea{resize:vertical;min-height:120px}
+    .check-row{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+    .check-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
+    .check-row label{margin:0;font-size:14px}
+    .btn{padding:12px 24px;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:15px;color:#fff;background:linear-gradient(135deg,var(--bg1),var(--bg2));box-shadow:0 4px 14px rgba(102,126,234,0.4);transition:transform .15s;width:100%}
+    .btn:hover{transform:translateY(-2px)}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'notice_board' %}" class="back">← Back to Notice Board</a>
+        <h2>📝 Post New Notice</h2>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="msg {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <label>Title *</label>
+            <input type="text" name="title" placeholder="Notice heading…" required/>
+
+            <label>Category</label>
+            <select name="category">
+                {% for val, label in categories %}
+                    <option value="{{ val }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+
+            <label>Content *</label>
+            <textarea name="content" placeholder="Write the notice content here…" required></textarea>
+
+            <div class="check-row">
+                <input type="checkbox" name="is_urgent" id="urgent"/>
+                <label for="urgent">🚨 Mark as URGENT</label>
+            </div>
+
+            <button type="submit" class="btn">Publish Notice</button>
+        </form>
+    </div>
+</body>
+</html>

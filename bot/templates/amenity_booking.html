@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Book Amenity - SmartBuilding</title>
+    <style>
+    :root{--bg1:#667eea;--bg2:#764ba2;--card:rgba(255,255,255,0.95);--accent:#667eea;--muted:#6b7280;--success:#10b981;--danger:#ef4444}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;padding:30px 16px}
+    .container{max-width:960px;margin:0 auto;background:var(--card);backdrop-filter:blur(12px);border-radius:16px;padding:28px;box-shadow:0 8px 32px rgba(0,0,0,0.18);border:1px solid rgba(255,255,255,0.3)}
+    .back{color:var(--accent);text-decoration:none;font-size:14px;font-weight:500}.back:hover{text-decoration:underline}
+    h2{margin:10px 0 6px;font-size:22px;color:#1e293b}
+    h3{margin:18px 0 10px;color:#334155;font-size:17px}
+    .msg{padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:14px}
+    .msg.success{background:#d1fae5;color:#065f46}.msg.error{background:#fee2e2;color:#991b1b}.msg.warning{background:#fef3c7;color:#92400e}
+    .form-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin:14px 0}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    label{display:block;font-weight:600;margin-bottom:5px;color:#334155;font-size:14px}
+    input[type=text],input[type=number],input[type=date],select{width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;font-family:inherit;background:#fff}
+    .btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;color:#fff;background:linear-gradient(135deg,var(--bg1),var(--bg2));box-shadow:0 4px 14px rgba(102,126,234,0.4);transition:transform .15s}
+    .btn:hover{transform:translateY(-2px)}
+    .btn-cancel{background:#fee2e2;color:var(--danger);box-shadow:none;border:1px solid #fca5a5;font-size:12px;padding:5px 10px;border-radius:6px;cursor:pointer}
+    .btn-cancel:hover{background:#fecaca}
+    .sec-link{display:inline-block;margin-top:10px;color:var(--accent);text-decoration:none;font-weight:600;font-size:14px}.sec-link:hover{text-decoration:underline}
+    table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}
+    th{text-align:left;padding:10px;background:#f1f5f9;border-bottom:2px solid #e2e8f0;color:#475569;font-size:13px}
+    td{padding:10px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+    .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;color:#fff}
+    .badge.confirmed{background:var(--success)}.badge.cancelled{background:var(--muted)}
+    .empty{text-align:center;padding:30px;color:var(--muted)}
+    @media(max-width:640px){.form-grid{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'dashboard' %}" class="back">← Back to Dashboard</a>
+        <h2>🏊 Amenity Booking</h2>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="msg {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Booking form -->
+        <div class="form-card">
+            <h3>Book an Amenity</h3>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-grid">
+                    <div><label>Amenity *</label>
+                        <select name="amenity_name" required>
+                            <option value="">-- Select --</option>
+                            {% for val, label in amenities %}
+                                <option value="{{ val }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div><label>Date *</label><input type="date" name="booking_date" min="{{ today }}" required/></div>
+                    <div><label>Time Slot *</label>
+                        <select name="time_slot" required>
+                            <option value="">-- Select --</option>
+                            {% for val, label in time_slots %}
+                                <option value="{{ val }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div><label>No. of Guests</label><input type="number" name="num_guests" value="1" min="1"/></div>
+                    <div style="grid-column:1/-1"><label>Purpose *</label><input type="text" name="purpose" placeholder="e.g. Birthday party" required/></div>
+                </div>
+                <div style="margin-top:14px"><button type="submit" class="btn">Confirm Booking</button></div>
+            </form>
+        </div>
+
+        {% if user.role == "secretary" %}
+            <a href="{% url 'all_bookings' %}" class="sec-link">📋 View All Bookings (Secretary Panel) →</a>
+        {% endif %}
+
+        <!-- Upcoming bookings -->
+        <h3>📅 My Upcoming Bookings</h3>
+        {% if upcoming_bookings %}
+        <div style="overflow-x:auto">
+        <table>
+            <thead><tr><th>Amenity</th><th>Date</th><th>Slot</th><th>Purpose</th><th>Guests</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+            {% for b in upcoming_bookings %}
+            <tr>
+                <td>{{ b.get_amenity_name_display }}</td>
+                <td>{{ b.booking_date|date:"d M Y" }}</td>
+                <td>{{ b.get_time_slot_display }}</td>
+                <td>{{ b.purpose }}</td>
+                <td>{{ b.num_guests }}</td>
+                <td><span class="badge {{ b.status }}">{{ b.get_status_display }}</span></td>
+                <td>
+                    {% if b.status == "confirmed" %}
+                    <form method="post" action="{% url 'cancel_booking' b.id %}" style="display:inline" onsubmit="return confirm('Cancel this booking?')">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-cancel">Cancel</button>
+                    </form>
+                    {% else %}—{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        {% else %}
+            <div class="empty">No upcoming bookings.</div>
+        {% endif %}
+
+        <!-- Past bookings -->
+        {% if past_bookings %}
+        <h3 style="color:var(--muted)">🕐 Past / Cancelled Bookings</h3>
+        <div style="overflow-x:auto">
+        <table style="opacity:0.7">
+            <thead><tr><th>Amenity</th><th>Date</th><th>Slot</th><th>Purpose</th><th>Status</th></tr></thead>
+            <tbody>
+            {% for b in past_bookings %}
+            <tr>
+                <td>{{ b.get_amenity_name_display }}</td>
+                <td>{{ b.booking_date|date:"d M Y" }}</td>
+                <td>{{ b.get_time_slot_display }}</td>
+                <td>{{ b.purpose }}</td>
+                <td><span class="badge {{ b.status }}">{{ b.get_status_display }}</span></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

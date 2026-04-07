@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>All Bookings - Secretary</title>
+    <style>
+    :root{--bg1:#667eea;--bg2:#764ba2;--card:rgba(255,255,255,0.95);--accent:#667eea;--muted:#6b7280;--success:#10b981}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;padding:30px 16px}
+    .container{max-width:1060px;margin:0 auto;background:var(--card);backdrop-filter:blur(12px);border-radius:16px;padding:28px;box-shadow:0 8px 32px rgba(0,0,0,0.18);border:1px solid rgba(255,255,255,0.3)}
+    .back{color:var(--accent);text-decoration:none;font-size:14px;font-weight:500}.back:hover{text-decoration:underline}
+    h2{margin:10px 0 14px;font-size:22px;color:#1e293b}
+    .msg{padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:14px}
+    .msg.success{background:#d1fae5;color:#065f46}
+    .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+    .filter-btn{padding:6px 14px;border-radius:20px;border:1px solid #cbd5e1;background:#fff;font-size:13px;cursor:pointer;text-decoration:none;color:#475569;font-weight:500;transition:all .15s}
+    .filter-btn:hover,.filter-btn.active{background:linear-gradient(135deg,var(--bg1),var(--bg2));color:#fff;border-color:transparent}
+    table{width:100%;border-collapse:collapse;font-size:14px}
+    th{text-align:left;padding:10px;background:#f1f5f9;border-bottom:2px solid #e2e8f0;color:#475569;font-size:13px}
+    td{padding:10px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+    .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;color:#fff}
+    .badge.confirmed{background:var(--success)}.badge.cancelled{background:var(--muted)}
+    .empty{text-align:center;padding:30px;color:var(--muted)}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'dashboard' %}" class="back">← Back to Dashboard</a>
+        <h2>📋 All Amenity Bookings — Secretary Panel</h2>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="msg {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="filters">
+            <a href="{% url 'all_bookings' %}" class="filter-btn {% if not amenity_filter %}active{% endif %}">All</a>
+            {% for val, label in amenities %}
+                <a href="?amenity={{ val }}" class="filter-btn {% if amenity_filter == val %}active{% endif %}">{{ label }}</a>
+            {% endfor %}
+        </div>
+
+        {% if bookings %}
+        <div style="overflow-x:auto">
+        <table>
+            <thead><tr>
+                <th>Amenity</th><th>Booked By</th><th>Date</th><th>Slot</th><th>Purpose</th><th>Guests</th><th>Status</th><th>Booked On</th>
+            </tr></thead>
+            <tbody>
+            {% for b in bookings %}
+            <tr>
+                <td>{{ b.get_amenity_name_display }}</td>
+                <td>{{ b.booked_by.full_name }}</td>
+                <td>{{ b.booking_date|date:"d M Y" }}</td>
+                <td>{{ b.get_time_slot_display }}</td>
+                <td>{{ b.purpose }}</td>
+                <td>{{ b.num_guests }}</td>
+                <td><span class="badge {{ b.status }}">{{ b.get_status_display }}</span></td>
+                <td>{{ b.booked_on|date:"d M Y" }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        {% else %}
+            <div class="empty">No bookings found.</div>
+        {% endif %}
+    </div>
+</body>
+</html>

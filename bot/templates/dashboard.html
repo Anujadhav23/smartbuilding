@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dashboard - SmartBuilding</title>
+    <style>
+        :root{
+            --bg-start: #f3f7fb;
+            --bg-end: #eef6ff;
+            --panel: rgba(255,255,255,0.95);
+            --muted: #6c757d;
+            --accent-a: #5b8cff; /* blue */
+            --accent-b: #6a4cff; /* violet */
+            --glass-border: rgba(15,23,42,0.06);
+            --soft-shadow: 0 12px 30px rgba(19,24,32,0.06);
+        }
+
+        html,body{height:100%;}
+        body{
+            margin:0; font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
+            background: linear-gradient(180deg,var(--bg-start),var(--bg-end)); color:#0f1720;
+            -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+            padding:28px 20px;
+        }
+
+        .container{
+            max-width:1100px; margin:28px auto; padding:22px; border-radius:16px;
+            background: linear-gradient(180deg, var(--panel), rgba(255,255,255,0.98));
+            box-shadow: var(--soft-shadow); border:1px solid var(--glass-border);
+        }
+
+        header{ display:flex; align-items:center; justify-content:space-between; gap:12px }
+        header h2{ margin:0; font-size:20px; letter-spacing:0.2px }
+
+        /* profile button */
+        #profileToggle{ border:0; background:transparent; cursor:pointer; padding:6px; display:flex; align-items:center }
+        #profileToggle img{ width:48px; height:48px; border-radius:50%; object-fit:cover; box-shadow:0 6px 18px rgba(15,23,42,0.12); border:2px solid white }
+        #profileToggle .initial{ width:48px; height:48px; border-radius:50%; background:linear-gradient(90deg,var(--accent-a),var(--accent-b)); color:white; display:inline-flex; align-items:center; justify-content:center; font-weight:700; box-shadow:0 6px 18px rgba(15,23,42,0.12) }
+
+        .layout{ display:flex; gap:20px; align-items:flex-start; margin-top:18px }
+
+        aside{
+            width:280px; background:linear-gradient(180deg, #ffffff, #fbfdff);
+            border-radius:14px; padding:18px; box-shadow:0 10px 30px rgba(2,6,23,0.04); border:1px solid var(--glass-border);
+        }
+        aside .avatar{ display:block; margin:0 auto }
+        aside h3{ text-align:center; margin:12px 0 6px 0; font-size:18px }
+        aside p{ text-align:center; color:var(--muted); margin:0 }
+
+        /* main profile panel (only visible when show_profile true) */
+        main.profile-panel{ flex:1; background:linear-gradient(180deg,#ffffff,#fbfdff); padding:20px; border-radius:14px; box-shadow:0 8px 28px rgba(2,6,23,0.04); border:1px solid var(--glass-border) }
+        main.profile-panel h3{ margin-top:0 }
+
+        hr{ border:0; border-top:1px solid rgba(15,23,42,0.04); margin:20px 0 }
+
+        .quick-actions{ margin-top:8px }
+        .actions-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:14px; }
+        .action{
+            display:flex; align-items:center; justify-content:center; gap:10px; padding:18px; border-radius:12px; text-decoration:none; color:#0f1720; font-weight:600;
+            background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(250,252,255,0.9)); border:1px solid rgba(15,23,42,0.03);
+            box-shadow: 0 6px 18px rgba(15,23,42,0.04); transition:transform .14s, box-shadow .14s, background .12s;
+        }
+        .action:hover{ transform:translateY(-6px); box-shadow:0 18px 40px rgba(15,23,42,0.08); background:linear-gradient(90deg,var(--accent-a),var(--accent-b)); color:white }
+
+        .action.secondary{ background:linear-gradient(90deg,#fff,#fff); border:1px solid rgba(15,23,42,0.04) }
+
+        /* modal styles */
+        .modal-backdrop{ position:fixed; inset:0; background:linear-gradient(rgba(2,6,23,0.48), rgba(2,6,23,0.48)); display:none; align-items:center; justify-content:center; z-index:60 }
+        .modal{ background:linear-gradient(180deg,#ffffff,#fafcff); border-radius:12px; padding:18px; width:420px; box-shadow:0 30px 70px rgba(2,6,23,0.28); border:1px solid rgba(15,23,42,0.06) }
+        .close-btn{ background:transparent; border:0; font-size:18px; cursor:pointer; float:right }
+
+        /* responsive */
+        @media (max-width:880px){ .actions-grid{ grid-template-columns: repeat(2,1fr) } aside{ width:220px } }
+        @media (max-width:640px){ .layout{ flex-direction:column } aside{ width:100% } .actions-grid{ grid-template-columns: 1fr } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 style="margin:0;">Dashboard</h2>
+            <!-- small profile icon -->
+            <button id="profileToggle" title="Open profile" style="border:0; background:transparent; cursor:pointer; padding:6px;">
+                {% if user.profile_image %}
+                    <img src="{{ user.profile_image.url }}" alt="Profile" style="width:44px; height:44px; object-fit:cover; border-radius:50%; border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.12);" />
+                {% else %}
+                    <div style="width:44px; height:44px; border-radius:50%; background:#e9ecef; display:inline-flex; align-items:center; justify-content:center; color:#6c757d; font-weight:600;">{{ user.full_name|slice:":1" }}</div>
+                {% endif %}
+            </button>
+        </div>
+
+    <div style="display:flex; gap:20px; align-items:flex-start; margin-top:16px;">
+            <aside style="width:260px; background:#ffffff; padding:18px; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.04);">
+                <div style="text-align:center;">
+                    {% if user.profile_image %}
+                        <img src="{{ user.profile_image.url }}" alt="Profile" style="width:120px; height:120px; object-fit:cover; border-radius:50%; border:4px solid #f7f7f8;" />
+                    {% else %}
+                        <div style="width:120px; height:120px; border-radius:50%; background:#f0f2f5; display:inline-flex; align-items:center; justify-content:center; color:#6c757d; font-weight:700; font-size:18px;">{{ user.full_name|slice:":1" }}</div>
+                    {% endif %}
+                </div>
+
+                <h3 style="margin-top:14px; text-align:center; font-size:18px;">{{ user.full_name }}</h3>
+                <p style="text-align:center; color:#6c757d; margin-top:6px;">{{ user.get_role_display }}</p>
+            </aside>
+
+            {% if show_profile %}
+                <section style="flex:1; background:white; padding:18px; border-radius:12px; box-shadow:0 6px 18px rgba(0,0,0,0.03);">
+                    <h3 style="margin-top:0;">Profile Details</h3>
+                    <p>Welcome, <strong>{{ user.full_name }}</strong> — role: <strong>{{ user.get_role_display }}</strong>.</p>
+                    <p>Contact: <strong>{{ user.contact_number }}</strong></p>
+                    <p>Aadhar: <strong>{{ user.aadhar_number }}</strong></p>
+                    <p>Joined at: <strong>{{ user.created_at }}</strong></p>
+                </section>
+            {% endif %}
+        </div>
+
+        <hr style="margin:20px 0;" />
+
+        <div>
+            <h3>Quick Actions</h3>
+                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; margin-top:12px;">
+                    {% comment %} nicer action buttons {% endcomment %}
+                    <a class="action" href="{% url 'dashboard_page' 'facilities' %}">Facilities</a>
+                    <a class="action" href="{% url 'dashboard_page' 'contact' %}">Contact</a>
+                    <a class="action" href="{% url 'dashboard_page' 'events' %}">Events</a>
+
+                    <a class="action" href="{% url 'dashboard_page' 'info' %}">Info</a>
+                    <a class="action" href="{% url 'dashboard_page' 'parking' %}">Parking</a>
+                    <a class="action" href="{% url 'dashboard_page' 'apartment' %}">Apartment</a>
+
+                    <a class="action" href="{% url 'dashboard_page' 'maintenance' %}">Maintenance</a>
+                    <a class="action" href="{% url 'dashboard_page' 'gym' %}">Gym</a>
+                    <a class="action" href="{% url 'dashboard_page' 'flat_sales' %}">Flat Sales</a>
+
+                    <a class="action" href="{% url 'complaints' %}">🔧 Complaints</a>
+                    <a class="action" href="{% url 'notice_board' %}">📋 Notice Board</a>
+                    <a class="action" href="{% url 'visitor_pass' %}">🚗 Visitor Pass</a>
+                    <a class="action" href="{% url 'book_amenity' %}">🏊 Book Amenity</a>
+                    {% if user.role == "security" %}
+                        <a class="action" href="{% url 'security_visitors' %}">🛡️ Gate View</a>
+                    {% endif %}
+                    {% if user.role == "secretary" %}
+                        <a class="action" href="{% url 'all_complaints' %}">📊 All Complaints</a>
+                        <a class="action" href="{% url 'all_bookings' %}">📊 All Bookings</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- profile modal -->
+            <div id="profileModal" class="modal-backdrop" role="dialog" aria-hidden="true">
+                <div class="modal card" role="document">
+                    <button class="close-btn" id="closeModal">✕</button>
+                    <h3>Profile</h3>
+                    <div style="display:flex; gap:12px; align-items:center; margin-top:8px;">
+                        {% if user.profile_image %}
+                            <img src="{{ user.profile_image.url }}" alt="Profile" style="width:76px; height:76px; object-fit:cover; border-radius:50%;" />
+                        {% else %}
+                            <div style="width:76px; height:76px; border-radius:50%; background:#f0f2f5; display:inline-flex; align-items:center; justify-content:center; color:#6c757d; font-weight:700;">{{ user.full_name|slice:":1" }}</div>
+                        {% endif %}
+                        <div>
+                            <div style="font-weight:700;">{{ user.full_name }}</div>
+                            <div style="color:var(--muted);">{{ user.get_role_display }}</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:12px;">
+                        <p style="margin:6px 0"><strong>Contact:</strong> {{ user.contact_number }}</p>
+                        <p style="margin:6px 0"><strong>Joined:</strong> {{ user.created_at }}</p>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data" style="margin-top:12px;">
+                        {% csrf_token %}
+                        <label style="display:block; font-weight:600; margin-bottom:6px;">Change photo</label>
+                        {{ form.profile_image }}
+                        <div style="margin-top:10px; text-align:right;">
+                            <button type="submit" class="action" style="display:inline-block; padding:10px 14px;">Upload</button>
+                        </div>
+                    </form>
+
+                    <hr style="border:0; border-top:1px solid rgba(15,23,42,0.08); margin:16px 0;"/>
+                    <a href="{% url 'logout' %}" style="display:block; text-align:center; padding:10px 14px; border-radius:8px; background:linear-gradient(90deg,#ef4444,#dc2626); color:#fff; font-weight:600; text-decoration:none; box-shadow:0 4px 12px rgba(239,68,68,0.3); transition:transform .15s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">🚪 Logout</a>
+                </div>
+            </div>
+    </div>
+</body>
+    <script>
+        // profile modal toggle
+        const profileToggle = document.getElementById('profileToggle');
+        const profileModal = document.getElementById('profileModal');
+        const closeModal = document.getElementById('closeModal');
+        if(profileToggle){
+            profileToggle.addEventListener('click', ()=>{
+                profileModal.style.display = 'flex';
+                profileModal.setAttribute('aria-hidden','false');
+            })
+        }
+        if(closeModal){
+            closeModal.addEventListener('click', ()=>{
+                profileModal.style.display = 'none';
+                profileModal.setAttribute('aria-hidden','true');
+            })
+        }
+        // close when clicking backdrop
+        if(profileModal){
+            profileModal.addEventListener('click', (e)=>{
+                if(e.target === profileModal){
+                    profileModal.style.display = 'none';
+                    profileModal.setAttribute('aria-hidden','true');
+                }
+            })
+        }
+    </script>
+</html>

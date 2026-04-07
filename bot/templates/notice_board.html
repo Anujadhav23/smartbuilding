@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Notice Board - SmartBuilding</title>
+    <style>
+    :root{--bg1:#667eea;--bg2:#764ba2;--card:rgba(255,255,255,0.95);--accent:#667eea;--muted:#6b7280;--danger:#ef4444}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;padding:30px 16px}
+    .container{max-width:900px;margin:0 auto;background:var(--card);backdrop-filter:blur(12px);border-radius:16px;padding:28px;box-shadow:0 8px 32px rgba(0,0,0,0.18);border:1px solid rgba(255,255,255,0.3)}
+    .back{color:var(--accent);text-decoration:none;font-size:14px;font-weight:500}.back:hover{text-decoration:underline}
+    h2{margin:10px 0 14px;font-size:22px;color:#1e293b}
+    .msg{padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:14px}
+    .msg.success{background:#d1fae5;color:#065f46}
+    .top-bar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+    .btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;color:#fff;background:linear-gradient(135deg,var(--bg1),var(--bg2));box-shadow:0 4px 14px rgba(102,126,234,0.4);text-decoration:none;display:inline-block;transition:transform .15s}
+    .btn:hover{transform:translateY(-2px)}
+    .notice{border:1px solid #e2e8f0;border-radius:12px;padding:18px;margin-bottom:14px;background:#fff;transition:box-shadow .2s}
+    .notice:hover{box-shadow:0 6px 18px rgba(0,0,0,0.06)}
+    .notice.urgent{border-left:5px solid var(--danger);background:#fef2f2}
+    .notice-header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+    .notice-title{font-size:17px;font-weight:700;color:#1e293b;margin:0}
+    .notice-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;font-size:13px;color:var(--muted)}
+    .cat-badge{display:inline-block;padding:2px 10px;border-radius:14px;font-size:11px;font-weight:600;background:#eef2ff;color:var(--accent)}
+    .urgent-badge{background:#fef2f2;color:var(--danger);font-weight:700}
+    .notice-body{margin-top:10px;color:#475569;line-height:1.6;font-size:14px;white-space:pre-wrap}
+    .delete-btn{background:none;border:1px solid #fca5a5;color:var(--danger);padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600}
+    .delete-btn:hover{background:#fee2e2}
+    .empty{text-align:center;padding:40px;color:var(--muted);font-size:15px}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'dashboard' %}" class="back">← Back to Dashboard</a>
+
+        <div class="top-bar">
+            <h2>📋 Notice Board</h2>
+            {% if user.role == "secretary" %}
+                <a href="{% url 'post_notice' %}" class="btn">+ Post Notice</a>
+            {% endif %}
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="msg {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        {% if notices %}
+            {% for n in notices %}
+            <div class="notice {% if n.is_urgent %}urgent{% endif %}">
+                <div class="notice-header">
+                    <div>
+                        <h3 class="notice-title">
+                            {% if n.is_urgent %}🚨 {% endif %}{{ n.title }}
+                        </h3>
+                        <div class="notice-meta">
+                            <span class="cat-badge {% if n.is_urgent %}urgent-badge{% endif %}">{{ n.get_category_display }}</span>
+                            <span>Posted by {{ n.posted_by.full_name }}</span>
+                            <span>{{ n.posted_on|date:"d M Y, h:i A" }}</span>
+                        </div>
+                    </div>
+                    {% if user.role == "secretary" %}
+                    <form method="post" action="{% url 'delete_notice' n.id %}" onsubmit="return confirm('Delete this notice?')">
+                        {% csrf_token %}
+                        <button type="submit" class="delete-btn">🗑 Delete</button>
+                    </form>
+                    {% endif %}
+                </div>
+                <div class="notice-body">{{ n.content }}</div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty">📭 No notices posted yet.</div>
+        {% endif %}
+    </div>
+</body>
+</html>

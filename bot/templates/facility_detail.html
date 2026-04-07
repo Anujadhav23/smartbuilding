@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ facility_name }} - Facility</title>
+    <style>
+        :root{--bg-top:#f6f9ff;--bg-bot:#eef7fb;--card-top:#ffffff;--card-bot:#fbfdff;--accent:#007bff;--muted:#6c757d}
+        *{box-sizing:border-box}
+        html,body{height:100%}
+        body {
+            font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Arial;
+            background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bot) 100%);
+            margin:0; padding:40px 18px; color:#0f1720; -webkit-font-smoothing:antialiased;
+        }
+        .page-wrap{min-height:100vh; display:flex; align-items:center; justify-content:center}
+        .container {
+            width:100%; max-width:760px; margin:0 auto;
+            background: linear-gradient(180deg,var(--card-top) 0%, var(--card-bot) 100%);
+            padding:26px; border-radius:12px; box-shadow:0 18px 40px rgba(19,24,32,0.06); border:1px solid rgba(14,30,37,0.06);
+        }
+        .btn { 
+            background:linear-gradient(90deg,#2563eb,#0ea5e9);
+            color:#fff; padding:10px 16px; border-radius:8px; border:none; cursor:pointer; text-decoration:none; display:inline-block
+        }
+        .btn:hover { opacity:0.95 }
+        .option { padding:12px; border:1px solid #eef2f6; border-radius:8px; margin-bottom:12px; background:#fff }
+        label { display:block; font-weight:700; margin-bottom:6px; color:#0f1720 }
+        input, select { width:100%; padding:10px; border:1px solid #e1e7ee; border-radius:8px; background:#fbfdff }
+        a { text-decoration:none; color:var(--accent) }
+        a:hover { text-decoration:underline }
+        .messages{margin:10px 0}
+        .muted{color:var(--muted)}
+
+        @media (max-width:600px){ .container{padding:18px} }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'dashboard_page' 'facilities' %}">← Back to Facilities</a>
+        <h2>{{ facility_name|default:"Water Facility Report" }}</h2>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div style="padding:8px; background:#e6f4ea; color:#0b6623; border-radius:6px; margin-bottom:8px;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {# Electricity table #}
+        {% if electricity_records %}
+            <div style="overflow:auto;">
+            <table style="width:100%; border-collapse:collapse; margin-top:12px;">
+                <thead>
+                    <tr style="background:#f0f0f0;">
+                        <th style="padding:8px; border:1px solid #ddd;">Flat No</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Block</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Owner Name</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Units Consumed (kWh)</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Meter No</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Month</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Previous Reading</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Current Reading</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Bill Amount (₹)</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Status</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Payment Date</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Connection Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in electricity_records %}
+                        <tr>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.flat_no }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.block }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.owner }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.units }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.meter }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.month }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.prev }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.curr }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.bill }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.status }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.payment_date }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.connection_type }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </div>
+
+        {# Gas combined bill table #}
+        {% elif gas_records %}
+            <div style="overflow:auto;">
+            <table style="width:100%; border-collapse:collapse; margin-top:12px;">
+                <thead>
+                    <tr style="background:#f0f0f0;">
+                        <th style="padding:8px; border:1px solid #ddd;">Flat No</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Block</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Owner Name</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Electricity Units (kWh)</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Electricity Bill (₹)</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Gas Units (m³)</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Gas Bill (₹)</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Total Bill (₹)</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Month</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Status</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Payment Date</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Meter No</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Gas Line ID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in gas_records %}
+                        <tr>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.flat_no }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.block }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.owner }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.elec_units }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.elec_bill }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.gas_units }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.gas_bill }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.total }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.month }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.status }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.payment_date }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.meter }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.gas_id }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </div>
+
+        {# WiFi records #}
+        {% elif wifi_records %}
+            <div style="overflow:auto;">
+            <table style="width:100%; border-collapse:collapse; margin-top:12px;">
+                <thead>
+                    <tr style="background:#f0f0f0;">
+                        <th style="padding:8px; border:1px solid #ddd;">Flat No</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Block</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Owner Name</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Plan Name</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Speed (Mbps)</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Data Used (GB)</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Monthly Limit (GB)</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Bill Amount (₹)</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Status</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Payment Date</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Provider Name</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Router ID</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Month</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in wifi_records %}
+                        <tr>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.flat_no }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.block }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.owner }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.plan }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.speed }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.used_gb }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.limit_gb }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.bill }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.status }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.payment_date }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.provider }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.router }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.month }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </div>
+
+        {# Plumbing issues #}
+        {% elif plumbing_records %}
+            <div style="overflow:auto;">
+            <table style="width:100%; border-collapse:collapse; margin-top:12px;">
+                <thead>
+                    <tr style="background:#f0f0f0;">
+                        <th style="padding:8px; border:1px solid #ddd;">Flat No</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Block</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Owner</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Issue</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Reported</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Status</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Assigned To</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in plumbing_records %}
+                        <tr>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.flat_no }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.block }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.owner }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.issue }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.reported }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.status }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.assigned_to }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </div>
+
+        {# Sewage treatment plant status #}
+        {% elif sewage_records %}
+            <div style="overflow:auto;">
+            <table style="width:100%; border-collapse:collapse; margin-top:12px;">
+                <thead>
+                    <tr style="background:#f0f0f0;">
+                        <th style="padding:8px; border:1px solid #ddd;">Plant</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Status</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Last Maintenance</th>
+                        <th style="padding:8px; border:1px solid #ddd;">pH Level</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Effluent Quality</th>
+                        <th style="padding:8px; border:1px solid #ddd;">Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in sewage_records %}
+                        <tr>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.plant }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.status }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.last_maintenance }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.ph_level }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.effluent_quality }}</td>
+                            <td style="padding:8px; border:1px solid #eee;">{{ r.remarks }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </div>
+
+        {# Water-tank form (default) #}
+        {% elif filter_default %}
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="option">
+                    <label>1) Filter water (%)</label>
+                    <input type="number" name="filter_water" min="0" max="100"
+                           value="{{ filter_default|default:'50' }}" readonly />
+                </div>
+
+                <div class="option">
+                    <label>2) Hot water (%)</label>
+                    <input type="number" name="hot_water" min="0" max="100"
+                           value="{{ hot_default|default:'70' }}" readonly />
+                </div>
+
+                <div class="option">
+                    <label>3) Flushing</label>
+                    <select name="flushing" disabled>
+                        <option value="ok" {% if flushing_default|default:'ok' == 'ok' %}selected{% endif %}>OK</option>
+                        <option value="low" {% if flushing_default == 'low' %}selected{% endif %}>Low</option>
+                        <option value="none" {% if flushing_default == 'none' %}selected{% endif %}>None</option>
+                    </select>
+                </div>
+
+                <div class="option">
+                    <label>4) Regular water (%)</label>
+                    <input type="number" name="regular_water" min="0" max="100"
+                           value="{{ regular_default|default:'90' }}" readonly />
+                </div>
+
+                <div style="margin-top:16px; text-align:right;">
+                    <button type="submit" class="btn">Submit Report</button>
+                </div>
+            </form>
+
+        {% else %}
+            <p>No data available for this facility.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

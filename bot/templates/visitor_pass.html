@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Visitor Pass - SmartBuilding</title>
+    <style>
+    :root{--bg1:#667eea;--bg2:#764ba2;--card:rgba(255,255,255,0.95);--accent:#667eea;--muted:#6b7280;--success:#10b981;--warning:#f59e0b;--danger:#ef4444}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;padding:30px 16px}
+    .container{max-width:960px;margin:0 auto;background:var(--card);backdrop-filter:blur(12px);border-radius:16px;padding:28px;box-shadow:0 8px 32px rgba(0,0,0,0.18);border:1px solid rgba(255,255,255,0.3)}
+    .back{color:var(--accent);text-decoration:none;font-size:14px;font-weight:500}.back:hover{text-decoration:underline}
+    h2{margin:10px 0 6px;font-size:22px;color:#1e293b}
+    h3{margin:18px 0 10px;color:#334155;font-size:17px}
+    .msg{padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:14px}
+    .msg.success{background:#d1fae5;color:#065f46}.msg.error{background:#fee2e2;color:#991b1b}.msg.warning{background:#fef3c7;color:#92400e}
+    .form-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin:14px 0}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    label{display:block;font-weight:600;margin-bottom:5px;color:#334155;font-size:14px}
+    input[type=text],input[type=date],input[type=time]{width:100%;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;font-family:inherit;background:#fff}
+    .btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;color:#fff;background:linear-gradient(135deg,var(--bg1),var(--bg2));box-shadow:0 4px 14px rgba(102,126,234,0.4);transition:transform .15s}
+    .btn:hover{transform:translateY(-2px)}
+    .btn-cancel{background:#fee2e2;color:var(--danger);box-shadow:none;border:1px solid #fca5a5;font-size:12px;padding:5px 10px;border-radius:6px}
+    .btn-cancel:hover{background:#fecaca}
+    .sec-link{display:inline-block;margin-top:10px;color:var(--accent);text-decoration:none;font-weight:600;font-size:14px}
+    table{width:100%;border-collapse:collapse;margin-top:10px;font-size:14px}
+    th{text-align:left;padding:10px;background:#f1f5f9;border-bottom:2px solid #e2e8f0;color:#475569;font-size:13px}
+    td{padding:10px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+    .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;color:#fff}
+    .badge.approved{background:var(--accent)}.badge.arrived{background:var(--success)}.badge.cancelled{background:var(--muted)}.badge.expired{background:#94a3b8}
+    .empty{text-align:center;padding:30px;color:var(--muted)}
+    @media(max-width:640px){.form-grid{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'dashboard' %}" class="back">← Back to Dashboard</a>
+        <h2>🚗 Visitor Pass</h2>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="msg {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Pre-approve form (Flat Owner only) -->
+        {% if user.role == "flat_owner" %}
+        <div class="form-card">
+            <h3>Pre-Approve a Visitor</h3>
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-grid">
+                    <div><label>Visitor Name *</label><input type="text" name="visitor_name" required/></div>
+                    <div><label>Contact *</label><input type="text" name="visitor_contact" maxlength="10" required/></div>
+                    <div><label>Purpose *</label><input type="text" name="purpose" required/></div>
+                    <div><label>Flat Number *</label><input type="text" name="flat_number" placeholder="e.g. A-101" required/></div>
+                    <div><label>Expected Date *</label><input type="date" name="expected_date" required/></div>
+                    <div><label>Expected Time *</label><input type="time" name="expected_time" required/></div>
+                    <div><label>Vehicle Number</label><input type="text" name="vehicle_number" placeholder="Optional"/></div>
+                </div>
+                <div style="margin-top:14px"><button type="submit" class="btn">Pre-Approve Visitor</button></div>
+            </form>
+        </div>
+        {% endif %}
+
+        {% if user.role == "security" %}
+            <a href="{% url 'security_visitors' %}" class="sec-link">🛡️ Go to Security Gate View →</a>
+        {% endif %}
+
+        <!-- Visitors table -->
+        <h3>{% if user.role == "secretary" %}All Visitors{% else %}My Visitors{% endif %}</h3>
+        {% if visitors %}
+        <div style="overflow-x:auto">
+        <table>
+            <thead><tr>
+                <th>Visitor</th><th>Contact</th><th>Flat</th><th>Purpose</th><th>Date</th><th>Time</th><th>Vehicle</th><th>Status</th>
+                {% if user.role == "flat_owner" %}<th>Action</th>{% endif %}
+            </tr></thead>
+            <tbody>
+            {% for v in visitors %}
+            <tr>
+                <td>{{ v.visitor_name }}</td>
+                <td>{{ v.visitor_contact }}</td>
+                <td>{{ v.flat_number|default:"—" }}</td>
+                <td>{{ v.purpose }}</td>
+                <td>{{ v.expected_date|date:"d M Y" }}</td>
+                <td>{{ v.expected_time|time:"h:i A" }}</td>
+                <td>{{ v.vehicle_number|default:"—" }}</td>
+                <td><span class="badge {{ v.status }}">{{ v.get_status_display }}</span></td>
+                {% if user.role == "flat_owner" %}
+                <td>
+                    {% if v.status == "approved" %}
+                    <form method="post" action="{% url 'cancel_visitor' v.id %}" style="display:inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-cancel">Cancel</button>
+                    </form>
+                    {% else %}—{% endif %}
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        {% else %}
+            <div class="empty">No visitors registered yet.</div>
+        {% endif %}
+    </div>
+</body>
+</html>

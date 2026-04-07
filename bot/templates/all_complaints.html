@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>All Complaints - Secretary</title>
+    <style>
+    :root{--bg1:#667eea;--bg2:#764ba2;--card:rgba(255,255,255,0.95);--accent:#667eea;--muted:#6b7280;--success:#10b981;--warning:#f59e0b;--danger:#ef4444}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;padding:30px 16px}
+    .container{max-width:1060px;margin:0 auto;background:var(--card);backdrop-filter:blur(12px);border-radius:16px;padding:28px;box-shadow:0 8px 32px rgba(0,0,0,0.18);border:1px solid rgba(255,255,255,0.3)}
+    .back{color:var(--accent);text-decoration:none;font-size:14px;font-weight:500}.back:hover{text-decoration:underline}
+    h2{margin:10px 0 14px;font-size:22px;color:#1e293b}
+    .msg{padding:10px 14px;border-radius:8px;margin-bottom:12px;font-size:14px}
+    .msg.success{background:#d1fae5;color:#065f46}.msg.error{background:#fee2e2;color:#991b1b}
+    .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+    .filter-btn{padding:6px 14px;border-radius:20px;border:1px solid #cbd5e1;background:#fff;font-size:13px;cursor:pointer;text-decoration:none;color:#475569;font-weight:500;transition:all .15s}
+    .filter-btn:hover,.filter-btn.active{background:linear-gradient(135deg,var(--bg1),var(--bg2));color:#fff;border-color:transparent}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th{text-align:left;padding:10px;background:#f1f5f9;border-bottom:2px solid #e2e8f0;color:#475569}
+    td{padding:10px;border-bottom:1px solid #f1f5f9;vertical-align:top}
+    .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;color:#fff}
+    .badge.pending{background:var(--danger)}.badge.in_progress{background:var(--warning)}.badge.resolved{background:var(--success)}
+    select,textarea{padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px;font-family:inherit;background:#fff}
+    .btn-sm{padding:5px 12px;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:12px;color:#fff;background:linear-gradient(135deg,var(--bg1),var(--bg2))}
+    .empty{text-align:center;padding:30px;color:var(--muted)}
+    .update-form{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px}
+    textarea.sm{width:100%;min-height:40px;font-size:12px;margin-top:4px}
+    @media(max-width:800px){table{font-size:12px}th,td{padding:6px}}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'dashboard' %}" class="back">← Back to Dashboard</a>
+        <h2>📋 All Complaints — Secretary Panel</h2>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="msg {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="filters">
+            <a href="{% url 'all_complaints' %}" class="filter-btn {% if not status_filter %}active{% endif %}">All</a>
+            <a href="?status=pending" class="filter-btn {% if status_filter == 'pending' %}active{% endif %}">🔴 Pending</a>
+            <a href="?status=in_progress" class="filter-btn {% if status_filter == 'in_progress' %}active{% endif %}">🟠 In Progress</a>
+            <a href="?status=resolved" class="filter-btn {% if status_filter == 'resolved' %}active{% endif %}">🟢 Resolved</a>
+        </div>
+
+        {% if complaints %}
+        <div style="overflow-x:auto">
+        <table>
+            <thead><tr>
+                <th>Ticket</th><th>Resident</th><th>Category</th><th>Description</th><th>Status</th><th>Filed</th><th>Update</th>
+            </tr></thead>
+            <tbody>
+            {% for c in complaints %}
+            <tr>
+                <td style="font-weight:700">{{ c.ticket_number }}</td>
+                <td>{{ c.resident.full_name }}</td>
+                <td>{{ c.get_category_display }}</td>
+                <td style="max-width:200px">{{ c.description|truncatewords:15 }}</td>
+                <td><span class="badge {{ c.status }}">{{ c.get_status_display }}</span></td>
+                <td>{{ c.date_filed|date:"d M Y" }}</td>
+                <td>
+                    <form method="post" action="{% url 'update_complaint' c.id %}">
+                        {% csrf_token %}
+                        <div class="update-form">
+                            <select name="status">
+                                <option value="pending" {% if c.status == "pending" %}selected{% endif %}>Pending</option>
+                                <option value="in_progress" {% if c.status == "in_progress" %}selected{% endif %}>In Progress</option>
+                                <option value="resolved" {% if c.status == "resolved" %}selected{% endif %}>Resolved</option>
+                            </select>
+                            <button type="submit" class="btn-sm">Save</button>
+                        </div>
+                        <textarea name="secretary_remarks" class="sm" placeholder="Remarks…">{{ c.secretary_remarks }}</textarea>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        {% else %}
+            <div class="empty">No complaints found.</div>
+        {% endif %}
+    </div>
+</body>
+</html>

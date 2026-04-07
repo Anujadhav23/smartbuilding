@@ -1,1 +1,1 @@
-web: gunicorn smartbuilding.wsgi
+web: python manage.py migrate --noinput && gunicorn smartbuilding.wsgi
